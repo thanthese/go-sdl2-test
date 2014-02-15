@@ -1,6 +1,6 @@
-// author: Jacky Boen
-
 package main
+
+// play with fonts: http://twinklebear.github.io/sdl2%20tutorials/2013/12/18/lesson-6-true-type-fonts-with-sdl_ttf/
 
 import (
 	"fmt"
@@ -8,13 +8,13 @@ import (
 	"os"
 )
 
-var winTitle string = "Go-SDL2 Render"
+var winTitle string = "Go-SDL2 Test"
 var winWidth, winHeight int = 800, 600
 
+const UPPERCASE = 1
+const LOWERCASE = 0
+
 func main() {
-	var points []sdl.Point
-	var rect sdl.Rect
-	var rects []sdl.Rect
 
 	if sdl.Init(sdl.INIT_EVERYTHING) != 0 {
 		fmt.Fprintf(os.Stderr, "Failed to init: %s\n", sdl.GetError())
@@ -23,8 +23,7 @@ func main() {
 	defer sdl.Quit()
 
 	window := sdl.CreateWindow(winTitle,
-		sdl.WINDOWPOS_UNDEFINED,
-		sdl.WINDOWPOS_UNDEFINED,
+		sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED,
 		winWidth, winHeight,
 		sdl.WINDOW_SHOWN)
 	if window == nil {
@@ -40,36 +39,46 @@ func main() {
 	}
 	defer renderer.Destroy()
 
-	renderer.Clear()
+	var x int32 = 300
+	var y int32 = 0
 
-	renderer.SetDrawColor(255, 255, 255, 255)
-	renderer.DrawPoint(150, 300)
+	for quit := false; !quit; {
 
-	renderer.SetDrawColor(0, 0, 255, 255)
-	renderer.DrawLine(0, 0, 200, 200)
+		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+			switch t := event.(type) {
+			case *sdl.KeyDownEvent:
 
-	points = []sdl.Point{{0, 0}, {100, 300}, {100, 300}, {200, 0}}
-	renderer.SetDrawColor(255, 255, 0, 255)
-	renderer.DrawLines(&points, 4)
+				fmt.Printf(
+					"[%d ms] Keyboard\ttype:%d\tsym:%c\tmodifiers:%d\tstate:%d\trepeat:%d\n",
+					t.Timestamp, t.Type, t.Keysym.Sym, t.Keysym.Mod, t.State, t.Repeat)
 
-	rect = sdl.Rect{300, 0, 200, 200}
-	renderer.SetDrawColor(255, 0, 0, 255)
-	renderer.DrawRect(&rect)
+				if sdl.GetKeyName(t.Keysym.Sym) == "Q" && t.Keysym.Mod == LOWERCASE {
+					quit = true
+				}
 
-	rects = []sdl.Rect{{400, 400, 100, 100}, {550, 350, 200, 200}}
-	renderer.SetDrawColor(0, 255, 255, 255)
-	renderer.DrawRects(&rects, 2)
+				if sdl.GetKeyName(t.Keysym.Sym) == "H" && t.Keysym.Mod == LOWERCASE {
+					x -= 10
+				}
+				if sdl.GetKeyName(t.Keysym.Sym) == "L" && t.Keysym.Mod == LOWERCASE {
+					x += 10
+				}
+				if sdl.GetKeyName(t.Keysym.Sym) == "J" && t.Keysym.Mod == LOWERCASE {
+					y += 10
+				}
+				if sdl.GetKeyName(t.Keysym.Sym) == "K" && t.Keysym.Mod == LOWERCASE {
+					y -= 10
+				}
+			case *sdl.QuitEvent:
+				quit = true
+			}
+		}
 
-	rect = sdl.Rect{250, 250, 200, 200}
-	renderer.SetDrawColor(0, 255, 0, 255)
-	renderer.FillRect(&rect)
+		renderer.Clear()
+		rect := sdl.Rect{x, y, 200, 200}
+		renderer.SetDrawColor(255, 0, 0, 255)
+		renderer.DrawRect(&rect)
+		renderer.SetDrawColor(0, 0, 0, 255)
 
-	rects = []sdl.Rect{{500, 300, 100, 100}, {200, 300, 200, 200}}
-	renderer.SetDrawColor(255, 0, 255, 255)
-	renderer.FillRects(&rects, 2)
-
-	renderer.Present()
-
-	sdl.Delay(2000)
-
+		renderer.Present()
+	}
 }
