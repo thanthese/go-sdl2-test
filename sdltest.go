@@ -74,11 +74,15 @@ func main() {
 		}
 
 		renderer.Clear()
+
 		rect := sdl.Rect{x, y, 200, 200}
 		renderer.SetDrawColor(255, 0, 0, 255)
 		renderer.DrawRect(&rect)
+
 		renderer.SetDrawColor(0, 0, 0, 255)
 
 		renderer.Present()
+
+		sdl.Delay(5)
 	}
 }
