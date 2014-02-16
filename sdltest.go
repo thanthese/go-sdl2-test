@@ -2,16 +2,11 @@ package main
 
 // play with fonts: http://twinklebear.github.io/sdl2%20tutorials/2013/12/18/lesson-6-true-type-fonts-with-sdl_ttf/
 // more with fonts: http://lazyfoo.net/SDL_tutorials/lesson07/
+
 // further   fonts: http://gameprogrammingtutorials.blogspot.com/2010/02/sdl-tutorial-series-part-6-displaying.html
 // crazy more onts: http://content.gpwiki.org/index.php/SDL_ttf:Tutorials:Basic_Font_Rendering
 // colors fonts? http://www.gamedev.net/topic/618944-api-for-roguelike/
 // sort: http://www.aaroncox.net/tutorials/2dtutorials/sdl_text.pdf
-
-// the function I probably want to use
-// SDL_Surface *TTF_RenderText_Shaded(TTF_Font *font, const char *text, SDL_Color fg, SDL_Color bg)
-// docs: https://www.libsdl.org/projects/SDL_ttf/docs/SDL_ttf.html
-
-// http://en.wikipedia.org/wiki/Monaco_(typeface)
 
 import (
 	"fmt"
@@ -57,8 +52,8 @@ func main() {
 	}
 
 	color := sdl.Color{255, 255, 255, 100}
-	img := renderText("TTF fonts are cool!", "/Users/thanthese/go/src/github.com/thanthese/sdltest/monaco.ttf",
-		color, 64, renderer)
+	img := renderText("a", "/Users/thanthese/go/src/github.com/thanthese/sdltest/monaco.ttf",
+		color, 32, renderer)
 	if img == nil {
 		return
 	}
@@ -127,7 +122,9 @@ func renderText(msg string, fontFile string, color sdl.Color,
 	}
 	defer font.Close()
 
-	surf := font.RenderText_Blended(msg, color)
+	fg := sdl.Color{255, 255, 255, 50}
+	bg := sdl.Color{100, 100, 100, 50}
+	surf := font.RenderText_Shaded(msg, fg, bg)
 	if surf == nil {
 		fmt.Fprintf(os.Stderr, "Failed making a surface: %s\n", e)
 		os.Exit(1)
@@ -144,5 +141,7 @@ func renderText(msg string, fontFile string, color sdl.Color,
 }
 
 func renderTexture(tex *sdl.Texture, ren *sdl.Renderer) {
-	ren.Copy(tex, nil, nil)
+	rect := sdl.Rect{X: 50, Y: 50, W: 15, H: 20}
+
+	ren.Copy(tex, nil, &rect)
 }
