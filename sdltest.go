@@ -5,7 +5,6 @@ package main
 
 // further   fonts: http://gameprogrammingtutorials.blogspot.com/2010/02/sdl-tutorial-series-part-6-displaying.html
 // crazy more onts: http://content.gpwiki.org/index.php/SDL_ttf:Tutorials:Basic_Font_Rendering
-// colors fonts? http://www.gamedev.net/topic/618944-api-for-roguelike/
 // sort: http://www.aaroncox.net/tutorials/2dtutorials/sdl_text.pdf
 
 import (
@@ -51,15 +50,34 @@ func main() {
 		os.Exit(1)
 	}
 
-	color := sdl.Color{255, 255, 255, 100}
-	img := renderText("a", "/Users/thanthese/go/src/github.com/thanthese/sdltest/monaco.ttf",
-		color, 32, renderer)
-	if img == nil {
-		return
+	// open font
+	fontpath := "/Users/thanthese/go/src/github.com/thanthese/sdltest/monaco.ttf"
+	fontsize := 24
+	fontmsg := "abcdefg"
+	font, e := ttf.OpenFont(fontpath, fontsize)
+	if e != nil {
+		fmt.Fprintf(os.Stderr, "Failed openfont: %s\n", e)
+		os.Exit(1)
+	}
+	defer font.Close()
+
+	fg := sdl.Color{255, 255, 255, 50}
+	bg := sdl.Color{100, 100, 100, 50}
+	surf := font.RenderText_Shaded(fontmsg, fg, bg)
+	if surf == nil {
+		fmt.Fprintf(os.Stderr, "Failed making a surface: %s\n", e)
+		os.Exit(1)
+	}
+	defer surf.Free()
+
+	texture := renderer.CreateTextureFromSurface(surf)
+	if texture == nil {
+		fmt.Fprintf(os.Stderr, "Failed making a texture: %s\n", e)
+		os.Exit(1)
 	}
 
-	// var h, w int
-	// sdl.QueryTexture(img, nil, nil, &w, &h)
+	var h, w int
+	sdl.QueryTexture(texture, nil, nil, &w, &h)
 
 	var x int32 = 300
 	var y int32 = 0
@@ -101,7 +119,7 @@ func main() {
 		renderer.SetDrawColor(255, 0, 0, 255)
 		renderer.DrawRect(&rect)
 
-		renderTexture(img, renderer)
+		renderer.Copy(texture, nil, &sdl.Rect{X: 50, Y: 50, W: int32(w), H: int32(h)})
 
 		renderer.SetDrawColor(0, 0, 0, 255)
 
@@ -109,39 +127,4 @@ func main() {
 
 		sdl.Delay(5)
 	}
-}
-
-func renderText(msg string, fontFile string, color sdl.Color,
-	fontsize int, renderer *sdl.Renderer) *sdl.Texture {
-
-	// open font
-	font, e := ttf.OpenFont(fontFile, fontsize)
-	if e != nil {
-		fmt.Fprintf(os.Stderr, "Failed openfont: %s\n", e)
-		os.Exit(1)
-	}
-	defer font.Close()
-
-	fg := sdl.Color{255, 255, 255, 50}
-	bg := sdl.Color{100, 100, 100, 50}
-	surf := font.RenderText_Shaded(msg, fg, bg)
-	if surf == nil {
-		fmt.Fprintf(os.Stderr, "Failed making a surface: %s\n", e)
-		os.Exit(1)
-	}
-	defer surf.Free()
-
-	texture := renderer.CreateTextureFromSurface(surf)
-	if texture == nil {
-		fmt.Fprintf(os.Stderr, "Failed making a texture: %s\n", e)
-		os.Exit(1)
-	}
-
-	return texture
-}
-
-func renderTexture(tex *sdl.Texture, ren *sdl.Renderer) {
-	rect := sdl.Rect{X: 50, Y: 50, W: 15, H: 20}
-
-	ren.Copy(tex, nil, &rect)
 }
