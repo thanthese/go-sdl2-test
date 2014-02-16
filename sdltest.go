@@ -1,10 +1,22 @@
 package main
 
 // play with fonts: http://twinklebear.github.io/sdl2%20tutorials/2013/12/18/lesson-6-true-type-fonts-with-sdl_ttf/
+// more with fonts: http://lazyfoo.net/SDL_tutorials/lesson07/
+// further   fonts: http://gameprogrammingtutorials.blogspot.com/2010/02/sdl-tutorial-series-part-6-displaying.html
+// crazy more onts: http://content.gpwiki.org/index.php/SDL_ttf:Tutorials:Basic_Font_Rendering
+// colors fonts? http://www.gamedev.net/topic/618944-api-for-roguelike/
+// sort: http://www.aaroncox.net/tutorials/2dtutorials/sdl_text.pdf
+
+// the function I probably want to use
+// SDL_Surface *TTF_RenderText_Shaded(TTF_Font *font, const char *text, SDL_Color fg, SDL_Color bg)
+// docs: https://www.libsdl.org/projects/SDL_ttf/docs/SDL_ttf.html
+
+// http://en.wikipedia.org/wiki/Monaco_(typeface)
 
 import (
 	"fmt"
 	"github.com/jackyb/go-sdl2/sdl"
+	"github.com/jackyb/go-sdl2/sdl_ttf"
 	"os"
 )
 
@@ -38,6 +50,21 @@ func main() {
 		os.Exit(1)
 	}
 	defer renderer.Destroy()
+
+	if ttf.Init() != 0 {
+		fmt.Fprintf(os.Stderr, "Failed to init ttf")
+		os.Exit(1)
+	}
+
+	color := sdl.Color{255, 255, 255, 100}
+	img := renderText("TTF fonts are cool!", "/Users/thanthese/go/src/github.com/thanthese/sdltest/monaco.ttf",
+		color, 64, renderer)
+	if img == nil {
+		return
+	}
+
+	// var h, w int
+	// sdl.QueryTexture(img, nil, nil, &w, &h)
 
 	var x int32 = 300
 	var y int32 = 0
@@ -79,10 +106,43 @@ func main() {
 		renderer.SetDrawColor(255, 0, 0, 255)
 		renderer.DrawRect(&rect)
 
+		renderTexture(img, renderer)
+
 		renderer.SetDrawColor(0, 0, 0, 255)
 
 		renderer.Present()
 
 		sdl.Delay(5)
 	}
+}
+
+func renderText(msg string, fontFile string, color sdl.Color,
+	fontsize int, renderer *sdl.Renderer) *sdl.Texture {
+
+	// open font
+	font, e := ttf.OpenFont(fontFile, fontsize)
+	if e != nil {
+		fmt.Fprintf(os.Stderr, "Failed openfont: %s\n", e)
+		os.Exit(1)
+	}
+	defer font.Close()
+
+	surf := font.RenderText_Blended(msg, color)
+	if surf == nil {
+		fmt.Fprintf(os.Stderr, "Failed making a surface: %s\n", e)
+		os.Exit(1)
+	}
+	defer surf.Free()
+
+	texture := renderer.CreateTextureFromSurface(surf)
+	if texture == nil {
+		fmt.Fprintf(os.Stderr, "Failed making a texture: %s\n", e)
+		os.Exit(1)
+	}
+
+	return texture
+}
+
+func renderTexture(tex *sdl.Texture, ren *sdl.Renderer) {
+	ren.Copy(tex, nil, nil)
 }
